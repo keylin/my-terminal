@@ -4,7 +4,7 @@ set -euo pipefail
 
 echo "── 安装 CLI 工具 ─────────────────────────"
 
-brew bundle --no-lock --file=/dev/stdin <<EOF
+brew bundle --file=/dev/stdin <<EOF
 # Shell & Prompt
 brew "starship"
 brew "zsh"
