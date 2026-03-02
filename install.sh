@@ -157,8 +157,20 @@ ensure_chezmoi() {
     if command -v brew &>/dev/null; then
         brew install chezmoi
     else
-        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-        export PATH="$HOME/.local/bin:$PATH"
+        local chezmoi_bin="$HOME/.local/bin"
+        mkdir -p "$chezmoi_bin"
+        local kernel arch_name
+        kernel="$(uname -s | tr '[:upper:]' '[:lower:]')"
+        case "$(uname -m)" in
+            x86_64)  arch_name="amd64" ;;
+            aarch64|arm64) arch_name="arm64" ;;
+            *) arch_name="$(uname -m)" ;;
+        esac
+        local url="https://github.com/twpayne/chezmoi/releases/latest/download/chezmoi-${kernel}-${arch_name}"
+        info "下载 chezmoi (${kernel}/${arch_name})..."
+        curl --progress-bar -fSL "$url" -o "${chezmoi_bin}/chezmoi"
+        chmod +x "${chezmoi_bin}/chezmoi"
+        export PATH="${chezmoi_bin}:$PATH"
     fi
     ok "chezmoi 安装完成"
 }
