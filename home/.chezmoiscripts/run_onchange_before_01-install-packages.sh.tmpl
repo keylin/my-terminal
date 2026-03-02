@@ -4,7 +4,7 @@ set -euo pipefail
 
 echo "── 安装 CLI 工具 ─────────────────────────"
 
-brew bundle --file=/dev/stdin <<EOF
+if ! brew bundle --file=/dev/stdin <<EOF
 # Shell & Prompt
 brew "starship"
 brew "zsh"
@@ -28,6 +28,9 @@ brew "tmux"
 # Dotfile manager
 brew "chezmoi"
 EOF
+then
+    echo "⚠ 部分包安装失败，已跳过（可稍后手动重试: brew bundle）"
+fi
 
 echo "✓ CLI 工具安装完成"
 
