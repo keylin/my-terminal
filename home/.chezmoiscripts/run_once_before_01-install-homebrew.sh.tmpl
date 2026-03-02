@@ -1,6 +1,8 @@
-{{- /* 首次运行：确保 Homebrew 已安装 */ -}}
+{{- /* 首次运行：确保 Homebrew 已安装（仅 macOS） */ -}}
 #!/usr/bin/env bash
 set -euo pipefail
+
+{{- if eq .chezmoi.os "darwin" }}
 
 if command -v brew &>/dev/null; then
     echo "✓ Homebrew 已安装"
@@ -10,14 +12,16 @@ fi
 echo "── 安装 Homebrew ─────────────────────────"
 NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-{{- if eq .chezmoi.os "darwin" }}
 {{-   if eq .chezmoi.arch "arm64" }}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 {{-   else }}
 eval "$(/usr/local/bin/brew shellenv)"
 {{-   end }}
-{{- else }}
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-{{- end }}
 
 echo "✓ Homebrew 安装完成"
+
+{{- else }}
+
+echo "✓ Linux 使用原生包管理器，跳过 Homebrew"
+
+{{- end }}

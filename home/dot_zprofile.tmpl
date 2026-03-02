@@ -1,14 +1,12 @@
 {{- /* ~/.zprofile — 登录 shell 环境变量 */ -}}
 
-# ─── Homebrew ────────────────────────────────────────────
+# ─── Homebrew (macOS only) ───────────────────────────────
 {{- if eq .chezmoi.os "darwin" }}
 {{-   if eq .chezmoi.arch "arm64" }}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 {{-   else }}
 eval "$(/usr/local/bin/brew shellenv)"
 {{-   end }}
-{{- else if eq .chezmoi.os "linux" }}
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 {{- end }}
 
 # ─── User local overrides (不受 chezmoi 管理) ──────────

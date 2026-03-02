@@ -4,42 +4,71 @@ set -euo pipefail
 
 echo "── 安装 CLI 工具 ─────────────────────────"
 
-if ! brew bundle --file=/dev/stdin <<EOF
-# Shell & Prompt
-brew "starship"
-brew "zsh"
+{{- if eq .chezmoi.os "darwin" }}
 
-# Fuzzy finder & Navigation
-brew "fzf"
-brew "zoxide"
+# ─── macOS: Homebrew ─────────────────────────────────────
+PACKAGES=(starship zsh fzf zoxide eza bat fd ripgrep delta jq tldr tmux chezmoi)
 
-# Modern CLI replacements
-brew "eza"
-brew "bat"
-brew "fd"
-brew "ripgrep"
-brew "delta"
+failed=()
+for pkg in "${PACKAGES[@]}"; do
+    if ! brew install "$pkg" 2>&1; then
+        echo "⚠ ${pkg} 安装失败，尝试修复..."
+        if brew upgrade "$pkg" 2>&1; then
+            echo "✓ ${pkg} 升级成功"
+        elif brew link --overwrite "$pkg" 2>/dev/null; then
+            echo "✓ ${pkg} 链接修复成功"
+        else
+            echo "✗ ${pkg} 安装失败，跳过"
+            failed+=("$pkg")
+        fi
+    fi
+done
 
-# Utilities
-brew "jq"
-brew "tldr"
-brew "tmux"
-
-# Dotfile manager
-brew "chezmoi"
-EOF
-then
-    echo "⚠ 部分包安装失败，已跳过（可稍后手动重试: brew bundle）"
+if [[ ${#failed[@]} -gt 0 ]]; then
+    echo "⚠ 以下包安装失败: ${failed[*]}"
+    echo "  可手动重试: brew install ${failed[*]}"
 fi
 
 echo "✓ CLI 工具安装完成"
 
-# ─── Platform-specific packages ──────────────────────────
-{{- if eq .chezmoi.os "darwin" }}
+# ─── macOS: cask 应用 ────────────────────────────────────
 echo "安装 macOS 应用..."
 brew install --cask ghostty 2>/dev/null || true
 brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || true
+
 {{- else }}
+
+# ─── Linux: 原生包管理器 ─────────────────────────────────
+PACKAGES=(zsh fzf bat fd-find ripgrep jq tldr tmux starship zoxide eza git-delta)
+
+install_pkg() {
+    if command -v apt-get &>/dev/null; then
+        sudo apt-get install -y -qq "$1" 2>/dev/null
+    elif command -v dnf &>/dev/null; then
+        sudo dnf install -y -q "$1" 2>/dev/null
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -S --needed --noconfirm "$1" 2>/dev/null
+    else
+        echo "⚠ 未找到支持的包管理器"
+        return 1
+    fi
+}
+
+failed=()
+for pkg in "${PACKAGES[@]}"; do
+    if ! install_pkg "$pkg"; then
+        echo "⚠ ${pkg} 不在系统仓库中，跳过"
+        failed+=("$pkg")
+    fi
+done
+
+if [[ ${#failed[@]} -gt 0 ]]; then
+    echo "⚠ 以下包需手动安装: ${failed[*]}"
+fi
+
+echo "✓ CLI 工具安装完成"
+
+# ─── Linux: Nerd Font ────────────────────────────────────
 echo "安装 Nerd Font (Linux)..."
 FONT_DIR="$HOME/.local/share/fonts"
 mkdir -p "$FONT_DIR"
@@ -49,6 +78,7 @@ if [[ ! -f "$FONT_DIR/JetBrainsMonoNerdFont-Regular.ttf" ]]; then
     curl -fsSL "$FONT_URL" | tar -xJ -C "$FONT_DIR"
     fc-cache -fv "$FONT_DIR" >/dev/null 2>&1
 fi
+
 {{- end }}
 
 echo "── 包安装完成 ──────────────────────────────"
