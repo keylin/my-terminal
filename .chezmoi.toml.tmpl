@@ -1,0 +1,6 @@
+{{- /* chezmoi 配置模板 — 首次 init 时交互式填写 */ -}}
+
+{{- $proxy_port := promptStringOnce . "proxy_port" "代理端口 (如 1080，留空跳过)" -}}
+
+[data]
+    proxy_port = {{ $proxy_port | quote }}

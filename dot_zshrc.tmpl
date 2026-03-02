@@ -1,0 +1,87 @@
+{{- /* ~/.zshrc — 交互式 shell 配置 */ -}}
+
+# ─── Zinit ───────────────────────────────────────────────
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+if [[ ! -d "$ZINIT_HOME" ]]; then
+    mkdir -p "$(dirname $ZINIT_HOME)"
+    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+source "${ZINIT_HOME}/zinit.zsh"
+
+# ─── Zinit Plugins ──────────────────────────────────────
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-completions
+zinit light Aloxaf/fzf-tab
+
+# Load completions
+autoload -Uz compinit && compinit
+zinit cdreplay -q
+
+# ─── History ─────────────────────────────────────────────
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+setopt appendhistory sharehistory
+setopt hist_ignore_space hist_ignore_all_dups hist_save_no_dups
+
+# ─── Completion styling ─────────────────────────────────
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath'
+
+# ─── Aliases (cross-platform) ───────────────────────────
+alias ls='eza --color=always --icons=always'
+alias ll='eza -la --color=always --icons=always'
+alias lt='eza -T --color=always --icons=always --level=2'
+alias cat='bat --paging=never'
+alias grep='rg'
+alias find='fd'
+
+# ─── Proxy ───────────────────────────────────────────────
+{{ if .proxy_port -}}
+alias proxys5='export ALL_PROXY=socks5://127.0.0.1:{{ .proxy_port }}'
+alias unproxys5='unset ALL_PROXY'
+alias proxyhttp='export HTTP_PROXY=http://127.0.0.1:{{ .proxy_port }}; export HTTPS_PROXY=http://127.0.0.1:{{ .proxy_port }}'
+alias unproxyhttp='unset HTTP_PROXY HTTPS_PROXY'
+{{ end -}}
+
+# ─── PATH ────────────────────────────────────────────────
+export PATH="$HOME/.local/bin:$PATH"
+
+{{- if eq .chezmoi.os "darwin" }}
+# macOS: openjdk
+{{-   if eq .chezmoi.arch "arm64" }}
+export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
+{{-   else }}
+export PATH="/usr/local/opt/openjdk/bin:$PATH"
+{{-   end }}
+{{- end }}
+
+# ─── Docker completions ─────────────────────────────────
+if [[ -d "$HOME/.docker/completions" ]]; then
+    fpath=($HOME/.docker/completions $fpath)
+fi
+
+{{- if eq .chezmoi.os "darwin" }}
+
+# ─── macOS only ──────────────────────────────────────────
+# Antigravity
+export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
+
+# Wrapper: unlock keychain before running claude (SSH sessions)
+claude() {
+    if [[ -n "${SSH_CONNECTION:-}" && -z "${KEYCHAIN_UNLOCKED:-}" ]]; then
+        security unlock-keychain ~/Library/Keychains/login.keychain-db
+        export KEYCHAIN_UNLOCKED=true
+    fi
+    command claude "$@"
+}
+{{- end }}
+
+# ─── Tool init (cross-platform) ─────────────────────────
+eval "$(starship init zsh)"
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
