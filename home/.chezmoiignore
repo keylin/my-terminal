@@ -1,0 +1,9 @@
+README.md
+LICENSE
+install.sh
+sync.sh
+.chezmoiroot
+
+{{ if ne .chezmoi.os "darwin" }}
+.config/ghostty
+{{ end }}

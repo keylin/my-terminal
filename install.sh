@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # my-terminal: 一键部署终端环境（macOS / Linux 自适应）
-# Usage: curl -fsSL <raw-url>/install.sh | bash
-#   or:  git clone <repo> && cd my-terminal && ./install.sh
+# Usage:
+#   远程: sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply keylin
+#   本地: git clone <repo> && cd my-terminal && ./install.sh
 set -euo pipefail
 
 # ─── Colors ──────────────────────────────────────────────
@@ -15,16 +16,19 @@ fail()  { printf "${RED}[FAIL]${NC}  %s\n" "$*"; }
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_URL="https://github.com/keylin/my-terminal.git"
 
-# ─── Detect Repo URL ──────────────────────────────────
-detect_repo_url() {
-    if ! REPO_URL="$(git remote get-url origin 2>/dev/null)"; then
-        fail "无法检测 git remote URL"
-        info "请确保在仓库目录中运行:"
-        info "  git clone <repo> && cd my-terminal && ./install.sh"
-        exit 1
+# ─── Detect Install Mode ──────────────────────────────
+detect_install_mode() {
+    if [[ -d "$SCRIPT_DIR/.git" ]]; then
+        INSTALL_MODE="local"
+        REPO_URL="$(git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null || echo "$REPO_URL")"
+        ok "安装模式: 本地仓库 ($SCRIPT_DIR)"
+    else
+        INSTALL_MODE="remote"
+        ok "安装模式: 远程拉取 ($REPO_URL)"
     fi
-    ok "仓库 URL: $REPO_URL"
 }
 
 # ─── Preflight Check ────────────────────────────────────
@@ -48,11 +52,7 @@ preflight_check() {
 
     # 3. 磁盘空间
     local avail_kb
-    if [[ "$OS" == "Darwin" ]]; then
-        avail_kb=$(df -k "$HOME" | awk 'NR==2 {print $4}')
-    else
-        avail_kb=$(df -k "$HOME" | awk 'NR==2 {print $4}')
-    fi
+    avail_kb=$(df -k "$HOME" | awk 'NR==2 {print $4}')
     local avail_gb=$((avail_kb / 1048576))
     if [[ $avail_kb -ge 2097152 ]]; then
         ok "磁盘空间: ${avail_gb}GB 可用"
@@ -69,46 +69,34 @@ preflight_check() {
         has_fail=true
     fi
 
-    # 5. Shell 检测
-    if command -v zsh &>/dev/null; then
-        ok "Zsh: 已安装 ($(zsh --version 2>/dev/null | head -1))"
-    else
-        if [[ "$OS" == "Linux" ]]; then
-            warn "Zsh: 未安装（安装阶段会自动安装）"
-        else
-            fail "Zsh: 未安装"
-            has_fail=true
-        fi
-    fi
-
-    # 6. Git 检测
+    # 5. Git 检测
     if command -v git &>/dev/null; then
         ok "Git: 已安装 ($(git --version))"
     else
-        if [[ "$OS" == "Linux" ]]; then
-            warn "Git: 未安装（安装阶段会自动安装）"
-        else
-            fail "Git: 未安装（macOS 请先安装 Xcode CLT: xcode-select --install）"
+        if [[ "$OS" == "Darwin" ]]; then
+            fail "Git: 未安装（请先安装 Xcode CLT: xcode-select --install）"
             has_fail=true
+        else
+            warn "Git: 未安装（安装阶段会自动安装）"
         fi
     fi
 
-    # 7. 冲突检测 - 已有配置文件
+    # 6. 冲突检测
     local conflict_files=("$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.tmux.conf" "$HOME/.config/starship.toml" "$HOME/.config/ghostty/config")
     local has_conflict=false
     for f in "${conflict_files[@]}"; do
         if [[ -f "$f" ]]; then
-            warn "已存在: $f（chezmoi apply 时会被覆盖）"
+            warn "已存在: $f（会被覆盖，原文件将自动备份至 ~/.dotfiles_backup/）"
             has_conflict=true
         fi
     done
     if [[ "$has_conflict" == true ]]; then
-        warn "建议先备份已有配置: cp ~/.zshrc ~/.zshrc.bak 等"
+        info "自定义配置可放入 ~/.zshrc.local 和 ~/.zprofile.local（不受 chezmoi 管理）"
     else
         ok "无配置文件冲突"
     fi
 
-    # 8. 已有 chezmoi
+    # 7. 已有 chezmoi
     if [[ -d "$HOME/.local/share/chezmoi" ]]; then
         warn "检测到已有 chezmoi 源目录 (~/.local/share/chezmoi)"
         warn "继续安装将重新初始化 chezmoi"
@@ -136,7 +124,6 @@ install_xcode_clt() {
     fi
     info "安装 Xcode Command Line Tools..."
     xcode-select --install 2>/dev/null || true
-    # 等待用户在 GUI 对话框中确认安装
     until xcode-select -p &>/dev/null; do
         sleep 5
     done
@@ -160,57 +147,27 @@ install_linux_prereqs() {
     ok "Linux 前置依赖安装完成"
 }
 
-# ─── Install Homebrew ────────────────────────────────────
-install_homebrew() {
-    if command -v brew &>/dev/null; then
-        ok "Homebrew 已安装"
-        return
-    fi
-    info "安装 Homebrew..."
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-    # 激活 brew（当前 session）
-    if [[ "$OS" == "Darwin" ]]; then
-        if [[ "$ARCH" == "arm64" ]]; then
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        else
-            eval "$(/usr/local/bin/brew shellenv)"
-        fi
-    else
-        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    fi
-    ok "Homebrew 安装完成"
-}
-
-# ─── Install chezmoi & apply ─────────────────────────────
-install_chezmoi() {
+# ─── Ensure chezmoi is installed ─────────────────────────
+ensure_chezmoi() {
     if command -v chezmoi &>/dev/null; then
         ok "chezmoi 已安装"
-    else
-        info "安装 chezmoi..."
-        brew install chezmoi
-        ok "chezmoi 安装完成"
-    fi
-
-    info "初始化 chezmoi 并应用配置..."
-    chezmoi init "$REPO_URL" --apply -v
-    ok "配置已应用！"
-}
-
-# ─── Set default shell to zsh ────────────────────────────
-set_default_shell() {
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        ok "默认 shell 已是 zsh"
         return
     fi
-    info "设置 zsh 为默认 shell..."
-    local zsh_path
-    zsh_path="$(command -v zsh)"
-    if ! grep -q "$zsh_path" /etc/shells 2>/dev/null; then
-        echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null
+    info "安装 chezmoi..."
+    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+    export PATH="$HOME/.local/bin:$PATH"
+    ok "chezmoi 安装完成"
+}
+
+# ─── Init chezmoi & apply ───────────────────────────────
+apply_dotfiles() {
+    info "初始化 chezmoi 并应用配置..."
+    if [[ "$INSTALL_MODE" == "local" ]]; then
+        chezmoi init --source="$SCRIPT_DIR" --apply -v
+    else
+        chezmoi init "$REPO_URL" --apply -v
     fi
-    chsh -s "$zsh_path"
-    ok "默认 shell 已设为 zsh"
+    ok "配置已应用！"
 }
 
 # ─── Main ────────────────────────────────────────────────
@@ -221,7 +178,7 @@ main() {
     printf "${BOLD}╚══════════════════════════════════════╝${NC}\n"
     echo ""
 
-    detect_repo_url
+    detect_install_mode
     preflight_check
 
     if [[ "$OS" == "Darwin" ]]; then
@@ -230,9 +187,13 @@ main() {
         install_linux_prereqs
     fi
 
-    install_homebrew
-    install_chezmoi
-    set_default_shell
+    ensure_chezmoi
+    apply_dotfiles
+
+    # chezmoi 的 run_once/run_onchange 脚本会自动完成:
+    # - 安装 Homebrew
+    # - 安装 CLI 工具和字体
+    # - 设置默认 shell 为 zsh
 
     echo ""
     printf "${GREEN}${BOLD}✓ 部署完成！${NC}\n"

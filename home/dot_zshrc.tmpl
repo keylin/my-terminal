@@ -1,11 +1,7 @@
 {{- /* ~/.zshrc — 交互式 shell 配置 */ -}}
 
-# ─── Zinit ───────────────────────────────────────────────
+# ─── Zinit (managed by chezmoi externals) ────────────────
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
-if [[ ! -d "$ZINIT_HOME" ]]; then
-    mkdir -p "$(dirname $ZINIT_HOME)"
-    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
-fi
 source "${ZINIT_HOME}/zinit.zsh"
 
 # ─── Zinit Plugins ──────────────────────────────────────
@@ -85,3 +81,6 @@ claude() {
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
+
+# ─── User local overrides (不受 chezmoi 管理) ──────────
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
