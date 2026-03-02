@@ -82,9 +82,12 @@ preflight_check() {
     fi
 
     # 6. 冲突检测
-    local conflict_files=("$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.tmux.conf" "$HOME/.config/starship.toml" "$HOME/.config/ghostty/config")
     local has_conflict=false
-    for f in "${conflict_files[@]}"; do
+    if [[ -f "$HOME/.zshrc" ]]; then
+        warn "已存在: ~/.zshrc（受管理部分会更新，个性化配置会保留，原文件将自动备份至 ~/.dotfiles_backup/）"
+        has_conflict=true
+    fi
+    for f in "$HOME/.zprofile" "$HOME/.tmux.conf" "$HOME/.config/starship.toml" "$HOME/.config/ghostty/config"; do
         if [[ -f "$f" ]]; then
             warn "已存在: ${f}（会被覆盖，原文件将自动备份至 ~/.dotfiles_backup/）"
             has_conflict=true
