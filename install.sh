@@ -154,8 +154,12 @@ ensure_chezmoi() {
         return
     fi
     info "安装 chezmoi..."
-    sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
-    export PATH="$HOME/.local/bin:$PATH"
+    if command -v brew &>/dev/null; then
+        brew install chezmoi
+    else
+        sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
     ok "chezmoi 安装完成"
 }
 
