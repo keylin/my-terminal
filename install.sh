@@ -86,7 +86,7 @@ preflight_check() {
     local has_conflict=false
     for f in "${conflict_files[@]}"; do
         if [[ -f "$f" ]]; then
-            warn "已存在: $f（会被覆盖，原文件将自动备份至 ~/.dotfiles_backup/）"
+            warn "已存在: ${f}（会被覆盖，原文件将自动备份至 ~/.dotfiles_backup/）"
             has_conflict=true
         fi
     done
