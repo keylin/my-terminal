@@ -44,7 +44,7 @@ if ! chezmoi source-path &>/dev/null; then
 fi
 
 # ─── Diff ────────────────────────────────────────────────
-DIFF_OUTPUT=$(chezmoi diff 2>/dev/null || true)
+DIFF_OUTPUT=$(chezmoi diff 2>&1) || true
 
 if [[ -z "$DIFF_OUTPUT" ]]; then
     ok "无变更，配置已是最新"
