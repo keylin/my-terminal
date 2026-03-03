@@ -43,6 +43,13 @@ if ! chezmoi source-path &>/dev/null; then
     exit 1
 fi
 
+# ─── Re-init if config template changed ──────────────────
+if chezmoi diff 2>&1 | grep -q "run chezmoi init to regenerate"; then
+    info "检测到 chezmoi 配置模板变更，重新初始化..."
+    chezmoi init
+    ok "chezmoi 配置已更新"
+fi
+
 # ─── Diff ────────────────────────────────────────────────
 DIFF_OUTPUT=$(chezmoi diff 2>&1) || true
 
