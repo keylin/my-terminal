@@ -82,6 +82,11 @@ claude() {
 }
 {{- end }}
 
+# ─── Key bindings ─────────────────────────────────────────
+bindkey '^[[3~' delete-char          # Delete
+bindkey '^[[H'  beginning-of-line    # Home
+bindkey '^[[F'  end-of-line          # End
+
 # ─── Tool init (cross-platform) ─────────────────────────
 eval "$(starship init zsh)"
 eval "$(fzf --zsh)"
