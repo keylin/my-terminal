@@ -46,8 +46,13 @@ if ! chezmoi source-path &>/dev/null; then
 fi
 
 # ─── Pull latest ─────────────────────────────────────────
+# chezmoi source-path 返回的是 .chezmoiroot 指定的子目录,
+# 需要找到其上层的 git 仓库根目录来执行 pull
+SOURCE_DIR="$(chezmoi source-path)"
+REPO_DIR="$(git -C "$SOURCE_DIR" rev-parse --show-toplevel 2>/dev/null || echo "$SOURCE_DIR")"
+
 info "拉取远程最新配置..."
-chezmoi git pull -- --rebase 2>/dev/null || chezmoi git pull
+git -C "$REPO_DIR" pull --rebase 2>/dev/null || git -C "$REPO_DIR" pull
 ok "拉取完成"
 
 # ─── Show diff ───────────────────────────────────────────
