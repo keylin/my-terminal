@@ -7,6 +7,8 @@
 #   ./update.sh --diff   # 仅预览差异，不应用
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'
 BLUE='\033[0;34m'; BOLD='\033[1m'; NC='\033[0m'
 
@@ -32,26 +34,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ─── Check chezmoi ───────────────────────────────────────
 if ! command -v chezmoi &>/dev/null; then
     fail "chezmoi 未安装，请先运行 install.sh"
     exit 1
 fi
 
-if ! chezmoi source-path &>/dev/null; then
-    fail "chezmoi 未初始化，请先运行 install.sh"
-    exit 1
-fi
-
-# ─── Re-init if config template changed ──────────────────
-if chezmoi diff 2>&1 | grep -q "run chezmoi init to regenerate"; then
-    info "检测到 chezmoi 配置模板变更，重新初始化..."
-    chezmoi init
-    ok "chezmoi 配置已更新"
-fi
+# 始终用脚本所在目录作为 chezmoi 源，避免 source-path 指向错误
+CM="chezmoi --source=$SCRIPT_DIR"
 
 # ─── Diff ────────────────────────────────────────────────
-DIFF_OUTPUT=$(chezmoi diff 2>&1) || true
+DIFF_OUTPUT=$($CM diff 2>&1) || true
 
 if [[ -z "$DIFF_OUTPUT" ]]; then
     ok "无变更，配置已是最新"
@@ -88,7 +80,7 @@ fi
 
 echo ""
 info "应用配置..."
-chezmoi apply -v
+$CM apply -v
 ok "配置已更新！"
 
 echo ""
