@@ -1,7 +1,7 @@
 README.md
 LICENSE
 install.sh
-sync.sh
+update.sh
 .chezmoiroot
 
 {{ if ne .chezmoi.os "darwin" }}

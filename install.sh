@@ -218,7 +218,7 @@ main() {
     printf "${GREEN}${BOLD}✓ 部署完成！${NC}\n"
     echo ""
     info "重启终端或执行: exec zsh"
-    info "日常同步配置: ./sync.sh"
+    info "日常更新配置: ./update.sh"
     echo ""
 }
 
