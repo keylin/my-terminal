@@ -95,7 +95,7 @@ claude() {
 bindkey '^[[3~' delete-char          # Delete
 bindkey '^[[H'  beginning-of-line    # Home
 bindkey '^[[F'  end-of-line          # End
-bindkey '^ ' autosuggest-accept     # Ctrl+Space accept suggestion
+bindkey '^[[Z' autosuggest-accept    # Shift+Tab accept suggestion
 
 # ─── Tool init (cached for fast startup) ─────────────────
 _cached_eval() {
