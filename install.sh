@@ -222,6 +222,7 @@ EOF
 backup_dotfiles() {
     # Files managed by chezmoi (excluding .zshrc which uses modify_ strategy)
     local files=(
+        "$HOME/.zshrc"
         "$HOME/.zprofile"
         "$HOME/.tmux.conf"
         "$HOME/.config/starship.toml"
