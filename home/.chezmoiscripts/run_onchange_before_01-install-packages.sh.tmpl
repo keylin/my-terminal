@@ -34,7 +34,6 @@ echo "✓ CLI 工具安装完成"
 # ─── macOS: cask 应用 ────────────────────────────────────
 echo "安装 macOS 应用..."
 brew install --cask ghostty 2>/dev/null || true
-brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || true
 
 {{- else }}
 
@@ -67,17 +66,6 @@ if [[ ${#failed[@]} -gt 0 ]]; then
 fi
 
 echo "✓ CLI 工具安装完成"
-
-# ─── Linux: Nerd Font ────────────────────────────────────
-echo "安装 Nerd Font (Linux)..."
-FONT_DIR="$HOME/.local/share/fonts"
-mkdir -p "$FONT_DIR"
-if [[ ! -f "$FONT_DIR/JetBrainsMonoNerdFont-Regular.ttf" ]]; then
-    FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz"
-    echo "下载 JetBrainsMono Nerd Font..."
-    curl -fsSL "$FONT_URL" | tar -xJ -C "$FONT_DIR"
-    fc-cache -fv "$FONT_DIR" >/dev/null 2>&1
-fi
 
 {{- end }}
 
