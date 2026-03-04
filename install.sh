@@ -178,13 +178,46 @@ ensure_chezmoi() {
     ok "chezmoi 安装完成"
 }
 
+# ─── Collect user data ─────────────────────────────────
+collect_user_data() {
+    info "收集配置信息..."
+
+    # GitHub 用户名：自动检测，失败则提示输入
+    local github_user=""
+    if command -v gh &>/dev/null && gh auth status &>/dev/null; then
+        github_user=$(gh api user --jq .login 2>/dev/null || true)
+    fi
+    if [[ -z "$github_user" ]]; then
+        github_user=$(git config --global user.name 2>/dev/null || true)
+    fi
+    if [[ -z "$github_user" ]]; then
+        read -rp "GitHub 用户名: " github_user
+    else
+        ok "GitHub 用户名: $github_user"
+    fi
+
+    # 代理端口
+    local proxy_port=""
+    read -rp "代理端口 (如 1080，留空跳过): " proxy_port
+
+    # 写入 chezmoi 配置
+    local config_dir="$HOME/.config/chezmoi"
+    mkdir -p "$config_dir"
+    cat > "$config_dir/chezmoi.toml" <<EOF
+[data]
+    github_user = "$github_user"
+    proxy_port = "$proxy_port"
+EOF
+    ok "配置信息已保存"
+}
+
 # ─── Init chezmoi & apply ───────────────────────────────
 apply_dotfiles() {
     info "初始化 chezmoi 并应用配置..."
     if [[ "$INSTALL_MODE" == "local" ]]; then
-        chezmoi init --source="$SCRIPT_DIR" --apply -v
+        chezmoi init --source="$SCRIPT_DIR" --apply --promptDefaults -v
     else
-        chezmoi init "$REPO_URL" --apply -v
+        chezmoi init "$REPO_URL" --apply --promptDefaults -v
     fi
     ok "配置已应用！"
 }
@@ -207,6 +240,7 @@ main() {
     fi
 
     ensure_chezmoi
+    collect_user_data
     apply_dotfiles
 
     # chezmoi 的 run_once/run_onchange 脚本会自动完成:
