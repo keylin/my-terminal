@@ -2,7 +2,7 @@
 # https://starship.rs/config/
 
 scan_timeout = 10
-command_timeout = 200
+command_timeout = 500
 
 format = """
 $directory\
