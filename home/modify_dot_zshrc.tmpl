@@ -188,9 +188,15 @@ elif [[ "$CURRENT" == *"$START_MARKER"* ]] && [[ "$CURRENT" == *"$END_MARKER"* ]
 
 else
     # ── Case 2: First migration (content but no markers) ──
+    # Backup existing content to ~/.zshrc.local so it's sourced by managed block
+    if [[ ! -f "$HOME/.zshrc.local" ]]; then
+        printf '%s\n' "$CURRENT" > "$HOME/.zshrc.local"
+    else
+        # .zshrc.local already exists; append old content to avoid data loss
+        printf '\n# ─── Migrated from .zshrc by chezmoi (%s) ──\n%s\n' \
+            "$(date +%Y-%m-%d)" "$CURRENT" >> "$HOME/.zshrc.local"
+    fi
     echo "$START_MARKER"
     echo "$MANAGED_BLOCK"
     echo "$END_MARKER"
-    echo ""
-    echo "$CURRENT"
 fi
