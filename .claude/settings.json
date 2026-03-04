@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(*)"
+      "Bash(git *)",
+      "Bash(chezmoi *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)"
     ]
   }
 }
