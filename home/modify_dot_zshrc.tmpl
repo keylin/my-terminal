@@ -16,6 +16,8 @@ zinit ice wait lucid blockf
 zinit light zsh-users/zsh-completions
 zinit ice wait lucid
 zinit light zsh-users/zsh-autosuggestions
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"
 zinit ice wait lucid
 zinit light Aloxaf/fzf-tab
 zinit ice wait lucid
@@ -31,11 +33,12 @@ fi
 zinit cdreplay -q
 
 # ─── History ─────────────────────────────────────────────
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=50000
+SAVEHIST=50000
 HISTFILE=~/.zsh_history
 setopt appendhistory sharehistory
 setopt hist_ignore_space hist_ignore_all_dups hist_save_no_dups
+setopt hist_expire_dups_first hist_verify
 
 # ─── Completion styling ─────────────────────────────────
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
@@ -96,6 +99,11 @@ bindkey '^[[3~' delete-char          # Delete
 bindkey '^[[H'  beginning-of-line    # Home
 bindkey '^[[F'  end-of-line          # End
 bindkey '^[[Z' autosuggest-accept    # Shift+Tab accept suggestion
+bindkey '^U' backward-kill-line       # Ctrl+U 删除光标前所有
+bindkey '^K' kill-line                # Ctrl+K 删除光标后所有
+bindkey '^W' backward-kill-word       # Ctrl+W 删除前一个单词
+bindkey '^[b' backward-word           # Alt+B 向前跳一个单词
+bindkey '^[f' forward-word            # Alt+F 向后跳一个单词
 
 # ─── Tool init (cached for fast startup) ─────────────────
 _cached_eval() {
@@ -113,6 +121,32 @@ _cached_eval() {
 _cached_eval starship starship init zsh
 _cached_eval fzf     fzf --zsh
 _cached_eval zoxide  zoxide init --cmd cd zsh
+
+# ─── Transient prompt ──────────────────────────────────
+zle-line-init() {
+    emulate -L zsh
+    [[ $CONTEXT == start ]] || return 0
+    while true; do
+        zle .recursive-edit
+        local -i ret=$?
+        [[ $ret == 0 && $KEYS == $'\4' ]] || break
+        [[ -o ignore_eof ]] || exit 0
+    done
+    local saved_prompt=$PROMPT
+    local saved_rprompt=$RPROMPT
+    PROMPT='❯ '
+    RPROMPT=''
+    zle .reset-prompt
+    PROMPT=$saved_prompt
+    RPROMPT=$saved_rprompt
+    if (( ret )); then
+        zle .send-break
+    else
+        zle .accept-line
+    fi
+    return ret
+}
+zle -N zle-line-init
 
 # ─── User local overrides (不受 chezmoi 管理) ──────────
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
