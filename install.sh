@@ -180,6 +180,14 @@ ensure_chezmoi() {
 
 # ─── Collect user data ─────────────────────────────────
 collect_user_data() {
+    local config_file="$HOME/.config/chezmoi/chezmoi.toml"
+
+    # 已有配置则跳过
+    if [[ -f "$config_file" ]] && grep -q 'github_user' "$config_file" 2>/dev/null; then
+        ok "chezmoi 配置已存在，跳过收集 ($config_file)"
+        return
+    fi
+
     info "收集配置信息..."
 
     # GitHub 用户名：自动检测，失败则提示输入
@@ -201,9 +209,8 @@ collect_user_data() {
     read -rp "代理端口 (如 1080，留空跳过): " proxy_port
 
     # 写入 chezmoi 配置
-    local config_dir="$HOME/.config/chezmoi"
-    mkdir -p "$config_dir"
-    cat > "$config_dir/chezmoi.toml" <<EOF
+    mkdir -p "$(dirname "$config_file")"
+    cat > "$config_file" <<EOF
 [data]
     github_user = "$github_user"
     proxy_port = "$proxy_port"
