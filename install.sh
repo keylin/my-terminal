@@ -222,9 +222,9 @@ EOF
 apply_dotfiles() {
     info "初始化 chezmoi 并应用配置..."
     if [[ "$INSTALL_MODE" == "local" ]]; then
-        chezmoi init --source="$SCRIPT_DIR" --apply --promptDefaults -v
+        chezmoi init --source="$SCRIPT_DIR" --apply --force -v
     else
-        chezmoi init "$REPO_URL" --apply --promptDefaults -v
+        chezmoi init "$REPO_URL" --apply --force -v
     fi
     ok "配置已应用！"
 }
