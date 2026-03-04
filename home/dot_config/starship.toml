@@ -1,6 +1,9 @@
 # ─── Starship Prompt 配置 ────────────────────────────────
 # https://starship.rs/config/
 
+scan_timeout = 10
+command_timeout = 200
+
 format = """
 $directory\
 $git_branch\

@@ -11,15 +11,15 @@ MANAGED_BLOCK=$(cat <<'MANAGED_EOF'
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 source "${ZINIT_HOME}/zinit.zsh"
 
-# ─── Zinit Plugins ──────────────────────────────────────
-zinit light zsh-users/zsh-syntax-highlighting
-zinit light zsh-users/zsh-autosuggestions
+# ─── Zinit Plugins (turbo mode — prompt 立即出现) ────────
+zinit ice wait lucid blockf
 zinit light zsh-users/zsh-completions
+zinit ice wait lucid
+zinit light zsh-users/zsh-autosuggestions
+zinit ice wait lucid
 zinit light Aloxaf/fzf-tab
-
-# Load completions
-autoload -Uz compinit && compinit
-zinit cdreplay -q
+zinit ice wait lucid atload'zicompinit; zicdreplay'
+zinit light zsh-users/zsh-syntax-highlighting
 
 # ─── History ─────────────────────────────────────────────
 HISTSIZE=10000
@@ -87,10 +87,22 @@ bindkey '^[[3~' delete-char          # Delete
 bindkey '^[[H'  beginning-of-line    # Home
 bindkey '^[[F'  end-of-line          # End
 
-# ─── Tool init (cross-platform) ─────────────────────────
-eval "$(starship init zsh)"
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+# ─── Tool init (cached for fast startup) ─────────────────
+_cached_eval() {
+    local name=$1; shift
+    local cache="${XDG_CACHE_HOME:-$HOME/.cache}/zsh/${name}.zsh"
+    local bin
+    bin=$(command -v "$1" 2>/dev/null) || return 1
+    if [[ ! -f "$cache" || "$bin" -nt "$cache" ]]; then
+        mkdir -p "${cache:h}"
+        "$@" > "$cache" 2>/dev/null
+    fi
+    source "$cache"
+}
+
+_cached_eval starship starship init zsh
+_cached_eval fzf     fzf --zsh
+_cached_eval zoxide  zoxide init --cmd cd zsh
 
 # ─── User local overrides (不受 chezmoi 管理) ──────────
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

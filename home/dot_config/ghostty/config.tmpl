@@ -1,5 +1,9 @@
 {{- /* ~/.config/ghostty/config */ -}}
 
+# ─── Terminal ─────────────────────────────────────────────
+# 使用 xterm-256color 保证 SSH 到远端时的兼容性 (与 iTerm2 一致)
+term = xterm-256color
+
 # ─── Font ────────────────────────────────────────────────
 font-family = JetBrainsMono Nerd Font
 font-size = 14
@@ -45,7 +49,6 @@ quick-terminal-animation-duration = 0.15
 
 # ─── Display ────────────────────────────────────────────
 background-opacity = 0.9
-background-blur = 20
 mouse-hide-while-typing = true
 resize-overlay = after-first
 
