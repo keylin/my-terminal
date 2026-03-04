@@ -222,7 +222,12 @@ EOF
 apply_dotfiles() {
     info "初始化 chezmoi 并应用配置..."
     if [[ "$INSTALL_MODE" == "local" ]]; then
-        chezmoi init --source="$SCRIPT_DIR" --apply --force -v
+        # 直接链接源目录并 apply，跳过 chezmoi init 的配置模板合并（会打开编辑器）
+        local chezmoi_source="$HOME/.local/share/chezmoi"
+        mkdir -p "$(dirname "$chezmoi_source")"
+        rm -rf "$chezmoi_source"
+        ln -s "$SCRIPT_DIR" "$chezmoi_source"
+        chezmoi apply --force -v
     else
         chezmoi init "$REPO_URL" --apply --force -v
     fi
