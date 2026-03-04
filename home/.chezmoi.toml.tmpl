@@ -2,8 +2,8 @@
 
 {{- /* GitHub 用户名：优先自动获取，失败则提示手动输入 */ -}}
 {{- $github_user := "" -}}
-{{- if (output "sh" "-c" "gh api user --jq .login 2>/dev/null || true" | trim) -}}
-{{-   $github_user = output "sh" "-c" "gh api user --jq .login 2>/dev/null || true" | trim -}}
+{{- if (output "sh" "-c" "gh auth status >/dev/null 2>&1 && gh api user --jq .login 2>/dev/null || true" | trim) -}}
+{{-   $github_user = output "sh" "-c" "gh auth status >/dev/null 2>&1 && gh api user --jq .login 2>/dev/null || true" | trim -}}
 {{- else if (output "sh" "-c" "git config --global user.name 2>/dev/null || true" | trim) -}}
 {{-   $github_user = output "sh" "-c" "git config --global user.name 2>/dev/null || true" | trim -}}
 {{- end -}}
