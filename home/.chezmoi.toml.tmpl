@@ -1,16 +1,8 @@
-{{- /* chezmoi 配置模板 — 首次 init 时交互式填写 */ -}}
+{{- /* chezmoi 配置模板 */ -}}
+{{- /* install.sh 会提前写入 chezmoi.toml，promptStringOnce 直接读取已有值 */ -}}
+{{- /* 单独执行 chezmoi init 时则交互式提示输入 */ -}}
 
-{{- /* GitHub 用户名：优先自动获取，失败则提示手动输入 */ -}}
-{{- $github_user := "" -}}
-{{- if (output "sh" "-c" "gh auth status >/dev/null 2>&1 && gh api user --jq .login 2>/dev/null || true" | trim) -}}
-{{-   $github_user = output "sh" "-c" "gh auth status >/dev/null 2>&1 && gh api user --jq .login 2>/dev/null || true" | trim -}}
-{{- else if (output "sh" "-c" "git config --global user.name 2>/dev/null || true" | trim) -}}
-{{-   $github_user = output "sh" "-c" "git config --global user.name 2>/dev/null || true" | trim -}}
-{{- end -}}
-{{- if eq $github_user "" -}}
-{{-   $github_user = promptStringOnce . "github_user" "GitHub 用户名" -}}
-{{- end -}}
-
+{{- $github_user := promptStringOnce . "github_user" "GitHub 用户名" -}}
 {{- $proxy_port := promptStringOnce . "proxy_port" "代理端口 (如 1080，留空跳过)" -}}
 
 [data]
