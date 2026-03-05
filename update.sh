@@ -16,7 +16,7 @@ info "拉取最新配置..."
 git -C "$SCRIPT_DIR" pull --rebase
 
 info "应用配置..."
-chezmoi --source="$SCRIPT_DIR" apply -v
+chezmoi --source="$SCRIPT_DIR" apply --force --no-pager -v
 ok "配置已更新！"
 
 exec zsh

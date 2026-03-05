@@ -267,9 +267,9 @@ apply_dotfiles() {
         mkdir -p "$(dirname "$chezmoi_source")"
         rm -rf "$chezmoi_source"
         ln -s "$SCRIPT_DIR" "$chezmoi_source"
-        chezmoi apply --force -v
+        chezmoi apply --force --no-pager -v
     else
-        chezmoi init "$REPO_URL" --apply --force -v
+        chezmoi init "$REPO_URL" --apply --force --no-pager -v
     fi
     ok "配置已应用！"
 }
