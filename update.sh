@@ -23,35 +23,26 @@ info "拉取最新配置..."
 git -C "$SCRIPT_DIR" pull --rebase
 ok "配置已拉取"
 
-# ─── 2. 升级软件包 ───────────────────────────────────
+# ─── 2. 升级终端相关软件包 ────────────────────────────
 if [[ "$OS" == "Darwin" ]]; then
     if command -v brew &>/dev/null; then
+        PACKAGES=(starship zsh fzf zoxide eza bat fd ripgrep delta jq tldr tmux chezmoi)
+        CASKS=(ghostty)
+
         info "更新 Homebrew..."
         brew update
 
-        info "升级已安装的软件包..."
-        outdated=$(brew outdated --quiet 2>/dev/null || true)
-        if [[ -n "$outdated" ]]; then
-            echo "$outdated" | while read -r pkg; do
-                info "升级 $pkg ..."
-                brew upgrade "$pkg" 2>&1 || warn "$pkg 升级失败，跳过"
-            done
-            ok "软件包升级完成"
-        else
-            ok "所有软件包已是最新"
-        fi
+        info "升级终端工具..."
+        for pkg in "${PACKAGES[@]}"; do
+            brew upgrade "$pkg" 2>/dev/null || true
+        done
+        ok "终端工具升级完成"
 
         info "升级 cask 应用..."
-        cask_outdated=$(brew outdated --cask --quiet 2>/dev/null || true)
-        if [[ -n "$cask_outdated" ]]; then
-            echo "$cask_outdated" | while read -r cask; do
-                info "升级 $cask ..."
-                brew upgrade --cask "$cask" 2>&1 || warn "$cask 升级失败，跳过"
-            done
-            ok "cask 应用升级完成"
-        else
-            ok "所有 cask 应用已是最新"
-        fi
+        for cask in "${CASKS[@]}"; do
+            brew upgrade --cask "$cask" 2>/dev/null || true
+        done
+        ok "cask 应用升级完成"
 
         info "清理旧版本缓存..."
         brew cleanup --prune=7 2>/dev/null || true
@@ -60,20 +51,26 @@ if [[ "$OS" == "Darwin" ]]; then
         warn "Homebrew 未安装，跳过软件包升级"
     fi
 elif [[ "$OS" == "Linux" ]]; then
+    PACKAGES=(zsh fzf bat fd-find ripgrep jq tldr tmux starship zoxide eza git-delta)
+
     if command -v apt-get &>/dev/null; then
-        info "更新并升级 apt 软件包..."
-        sudo apt-get update -qq && sudo apt-get upgrade -y -qq
-        sudo apt-get autoremove -y -qq 2>/dev/null || true
-        ok "apt 软件包升级完成"
+        info "更新 apt 索引..."
+        sudo apt-get update -qq
+        info "升级终端工具..."
+        for pkg in "${PACKAGES[@]}"; do
+            sudo apt-get install --only-upgrade -y -qq "$pkg" 2>/dev/null || true
+        done
+        ok "终端工具升级完成"
     elif command -v dnf &>/dev/null; then
-        info "升级 dnf 软件包..."
-        sudo dnf upgrade -y -q
-        sudo dnf autoremove -y -q 2>/dev/null || true
-        ok "dnf 软件包升级完成"
+        info "升级终端工具..."
+        for pkg in "${PACKAGES[@]}"; do
+            sudo dnf upgrade -y -q "$pkg" 2>/dev/null || true
+        done
+        ok "终端工具升级完成"
     elif command -v pacman &>/dev/null; then
-        info "升级 pacman 软件包..."
-        sudo pacman -Syu --noconfirm
-        ok "pacman 软件包升级完成"
+        info "升级终端工具..."
+        sudo pacman -S --noconfirm --needed "${PACKAGES[@]}" 2>/dev/null || true
+        ok "终端工具升级完成"
     else
         warn "未找到支持的包管理器，跳过软件包升级"
     fi
