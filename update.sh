@@ -94,6 +94,12 @@ else
     warn "tpm 未安装，跳过 tmux 插件更新"
 fi
 
+# ─── 5. 重载配置 ─────────────────────────────────────
+if command -v tmux &>/dev/null && tmux list-sessions &>/dev/null 2>&1; then
+    info "重载 tmux 配置..."
+    tmux source-file ~/.tmux.conf 2>/dev/null && ok "tmux 配置已重载" || warn "tmux 配置重载失败"
+fi
+
 # ─── 完成 ────────────────────────────────────────────
 echo ""
 printf "${GREEN}${BOLD}✓ 更新完成！${NC}\n"
