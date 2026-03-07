@@ -97,6 +97,11 @@ if command -v tmux &>/dev/null && tmux list-sessions &>/dev/null 2>&1; then
     tmux source-file ~/.tmux.conf 2>/dev/null && ok "tmux 配置已重载" || warn "tmux 配置重载失败"
 fi
 
+if [[ "$OS" == "Darwin" && -f "$HOME/.config/ghostty/config" ]]; then
+    info "触发 Ghostty 配置重载..."
+    touch "$HOME/.config/ghostty/config" && ok "Ghostty 配置已触发重载" || warn "Ghostty 配置重载失败"
+fi
+
 # ─── 完成 ────────────────────────────────────────────
 echo ""
 printf "${GREEN}${BOLD}✓ 更新完成！${NC}\n"
