@@ -8,6 +8,12 @@ term = xterm-256color
 font-family = SF Mono
 font-size = 12
 font-thicken = true
+# CJK 字符指定统一字体，避免回退时大小不一
+font-codepoint-map = U+4E00-U+9FFF=Hiragino Sans GB
+font-codepoint-map = U+3400-U+4DBF=Hiragino Sans GB
+font-codepoint-map = U+F900-U+FAFF=Hiragino Sans GB
+font-codepoint-map = U+3000-U+303F=Hiragino Sans GB
+font-codepoint-map = U+FF00-U+FFEF=Hiragino Sans GB
 
 # ─── Theme: Catppuccin Mocha ─────────────────────────────
 palette = 0=#45475a
