@@ -5,12 +5,31 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OS="$(uname -s)"
+UPDATE_RECORD="$HOME/.local/state/my-terminal/last_update"
+UPGRADE_INTERVAL=2592000  # 30 days in seconds
 
 GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[0;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
 info()  { printf "${BLUE}[INFO]${NC}  %s\n" "$*"; }
 ok()    { printf "${GREEN}[OK]${NC}    %s\n" "$*"; }
 warn()  { printf "${YELLOW}[WARN]${NC}  %s\n" "$*"; }
 fail()  { printf "${RED}[FAIL]${NC}  %s\n" "$*"; exit 1; }
+
+need_package_upgrade() {
+    if [[ ! -f "$UPDATE_RECORD" ]]; then
+        mkdir -p "$(dirname "$UPDATE_RECORD")"
+        return 0
+    fi
+    local last now elapsed remaining
+    last=$(<"$UPDATE_RECORD")
+    now=$(date +%s)
+    elapsed=$((now - last))
+    if (( elapsed >= UPGRADE_INTERVAL )); then
+        return 0
+    fi
+    remaining=$(( (UPGRADE_INTERVAL - elapsed) / 86400 ))
+    info "距离上次软件升级不足 30 天，跳过（约 ${remaining} 天后再次升级）"
+    return 1
+}
 
 command -v chezmoi &>/dev/null || fail "chezmoi 未安装，请先运行 install.sh"
 
@@ -24,6 +43,7 @@ git -C "$SCRIPT_DIR" pull --rebase
 ok "配置已拉取"
 
 # ─── 2. 升级终端相关软件包 ────────────────────────────
+if need_package_upgrade; then
 if [[ "$OS" == "Darwin" ]]; then
     if command -v brew &>/dev/null; then
         PACKAGES=(starship zsh fzf zoxide eza bat fd ripgrep delta jq tldr tmux chezmoi)
@@ -75,6 +95,8 @@ elif [[ "$OS" == "Linux" ]]; then
         warn "未找到支持的包管理器，跳过软件包升级"
     fi
 fi
+date +%s > "$UPDATE_RECORD"
+fi  # need_package_upgrade
 
 # ─── 3. 更新 chezmoi 外部依赖（zinit、tpm）─────────
 info "更新外部依赖（zinit、tpm）..."
