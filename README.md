@@ -47,8 +47,14 @@ git pull && chezmoi apply -v
 
 ```
 .
-├── install.sh                  # 一键安装脚本
-├── update.sh                   # 一键更新脚本
+├── install.sh                  # 终端一键安装
+├── update.sh                   # 终端一键更新
+├── rime-install.sh             # Rime 一键安装
+├── rime-update.sh              # Rime 一键更新
+├── rime/                       # Rime 个人定制配置
+│   ├── default.custom.yaml
+│   ├── squirrel.custom.yaml
+│   └── rime_ice.custom.yaml
 ├── .chezmoiroot                # chezmoi 源目录指向 home/
 └── home/                       # chezmoi 源文件
     ├── .chezmoi.toml.tmpl      # chezmoi 配置（交互式填写 GitHub 用户名、代理端口）
@@ -62,6 +68,36 @@ git pull && chezmoi apply -v
         ├── ghostty/config.tmpl # Ghostty 终端配置
         └── starship.toml       # Starship prompt 配置
 ```
+
+## Rime (鼠须管)
+
+基于 [rime-ice (雾凇拼音)](https://github.com/iDvel/rime-ice) 的个人输入法配置，仅支持 macOS。
+
+**安装：**
+
+```bash
+./rime-install.sh
+```
+
+安装过程：预检环境 → 备份 `~/Library/Rime/` → clone rime-ice → 覆盖个人定制。
+
+**更新：**
+
+```bash
+./rime-update.sh
+```
+
+更新过程：拉取最新配置 → 保留运行时文件 → 重装 rime-ice → 重新覆盖定制。
+
+**个人定制文件（`rime/` 目录）：**
+
+| 文件 | 说明 |
+|------|------|
+| `default.custom.yaml` | 只保留全拼方案、候选词数量 |
+| `squirrel.custom.yaml` | 鼠须管外观（仿 macOS 原生、亮暗色自适应） |
+| `rime_ice.custom.yaml` | 模糊音（前后鼻音） |
+
+安装/更新后需**重新部署**：菜单栏鼠须管图标 → 重新部署，或 `Control+Option+`` `。
 
 ## 个性化
 

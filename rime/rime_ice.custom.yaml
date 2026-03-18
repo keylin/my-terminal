@@ -1,0 +1,14 @@
+# 雾凇拼音个人定制
+patch:
+  # 启用前后鼻音模糊音
+  "speller/algebra/+":
+    - derive/ang$/an/
+    - derive/an$/ang/
+    - derive/eng$/en/
+    - derive/en$/eng/
+    - derive/in$/ing/
+    - derive/ing$/in/
+    - derive/ian$/iang/
+    - derive/iang$/ian/
+    - derive/uan$/uang/
+    - derive/uang$/uan/

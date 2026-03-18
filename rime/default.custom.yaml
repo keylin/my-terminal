@@ -1,0 +1,11 @@
+# 个人定制
+patch:
+  # 只保留全拼
+  schema_list:
+    - schema: rime_ice
+
+  # 候选词 9 个
+  menu/page_size: 5
+
+  # 一个方案时展开选项（不折叠）
+  switcher/fold_options: false
