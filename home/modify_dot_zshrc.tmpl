@@ -120,7 +120,6 @@ _cached_eval() {
 
 _cached_eval starship starship init zsh
 _cached_eval fzf     fzf --zsh
-_cached_eval zoxide  zoxide init --cmd cd zsh
 
 # ─── Transient prompt ──────────────────────────────────
 zle-line-init() {
@@ -147,6 +146,9 @@ zle-line-init() {
     return ret
 }
 zle -N zle-line-init
+
+# ─── Zoxide (must be at the end of .zshrc) ─────────────
+_cached_eval zoxide  zoxide init --cmd cd zsh
 
 # ─── User local overrides (不受 chezmoi 管理) ──────────
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
