@@ -25,7 +25,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply keylin
 ```bash
 git clone https://github.com/keylin/my-terminal.git
 cd my-terminal
-./terminal-install.sh
+./install.sh
 ```
 
 安装过程会自动：备份已有配置 → 安装 Homebrew（macOS）→ 安装 CLI 工具和字体 → 应用所有配置 → 设置 zsh 为默认 shell。
@@ -34,7 +34,7 @@ cd my-terminal
 
 ```bash
 cd my-terminal
-./terminal-update.sh
+./update.sh
 ```
 
 或直接：
@@ -47,8 +47,8 @@ git pull && chezmoi apply -v
 
 ```
 .
-├── terminal-install.sh          # 终端一键安装
-├── terminal-update.sh          # 终端一键更新
+├── install.sh                  # 终端一键安装
+├── update.sh                   # 终端一键更新
 ├── .chezmoiroot                # chezmoi 源目录指向 home/
 └── home/                       # chezmoi 源文件
     ├── .chezmoi.toml.tmpl      # chezmoi 配置（交互式填写 GitHub 用户名、代理端口）

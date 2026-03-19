@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # my-terminal: 一键更新配置 + 升级软件
-# Usage: ./terminal-update.sh
+# Usage: ./update.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,7 +31,7 @@ need_package_upgrade() {
     return 1
 }
 
-command -v chezmoi &>/dev/null || fail "chezmoi 未安装，请先运行 ./terminal-install.sh"
+command -v chezmoi &>/dev/null || fail "chezmoi 未安装，请先运行 ./install.sh"
 
 echo ""
 printf "${BOLD}── my-terminal 更新 ──────────────────────${NC}\n"
