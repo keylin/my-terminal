@@ -2,7 +2,7 @@
 # my-terminal: 一键部署终端环境（macOS / Linux 自适应）
 # Usage:
 #   远程: sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply keylin
-#   本地: git clone <repo> && cd my-terminal && ./install.sh
+#   本地: git clone <repo> && cd my-terminal && ./terminal-install.sh
 set -euo pipefail
 
 # ─── Colors ──────────────────────────────────────────────
@@ -305,7 +305,7 @@ main() {
     printf "${GREEN}${BOLD}✓ 部署完成！${NC}\n"
     echo ""
     info "重启终端或执行: exec zsh"
-    info "日常更新: git pull && ./update.sh"
+    info "日常更新: git pull && ./terminal-update.sh"
     echo ""
 }
 

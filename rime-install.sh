@@ -108,6 +108,24 @@ apply_custom() {
     fi
 }
 
+# ─── Configure sync_dir ─────────────────────────────────
+configure_sync() {
+    local install_yaml="$RIME_DIR/installation.yaml"
+    local sync_dir="$SCRIPT_DIR/rime/sync"
+
+    if [[ ! -f "$install_yaml" ]]; then
+        warn "installation.yaml 不存在，跳过同步目录配置（重新部署后会生成）"
+        return
+    fi
+
+    if grep -q "^sync_dir:" "$install_yaml" 2>/dev/null; then
+        sed -i '' "s|^sync_dir:.*|sync_dir: \"$sync_dir\"|" "$install_yaml"
+    else
+        echo "sync_dir: \"$sync_dir\"" >> "$install_yaml"
+    fi
+    ok "同步目录: $sync_dir"
+}
+
 # ─── Cleanup ─────────────────────────────────────────────
 cleanup_rime() {
     # 删除 rime-ice clone 带来的不需要的文件
@@ -129,12 +147,16 @@ main() {
     install_rime_ice
     apply_custom
     cleanup_rime
+    configure_sync
 
     echo ""
     printf "${GREEN}${BOLD}✓ 安装完成！${NC}\n"
     echo ""
     info "请在系统中切换到鼠须管，然后点击菜单栏图标 → 重新部署"
     info "或按快捷键 Control+Option+\` 重新部署"
+    if [[ -d "$SCRIPT_DIR/rime/sync" ]] && ls "$SCRIPT_DIR/rime/sync"/*/rime_ice.userdb.txt &>/dev/null 2>&1; then
+        info "检测到历史词频数据，部署后请点击「同步用户数据」导入"
+    fi
     echo ""
 }
 
