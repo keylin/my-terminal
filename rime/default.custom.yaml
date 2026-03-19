@@ -12,7 +12,7 @@ patch:
 
   # Caps Lock 切中英（macOS 原生习惯）
   ascii_composer:
-    good_old_caps_lock: true
+    good_old_caps_lock: false
     switch_key:
       Caps_Lock: commit_code
       Shift_L: noop
