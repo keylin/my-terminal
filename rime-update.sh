@@ -77,30 +77,7 @@ fi
 
 # ─── 完成 ────────────────────────────────────────────
 echo ""
-# ─── 4. 重新部署并验证 ───────────────────────────────
-info "重新部署 Rime..."
-BEFORE_TS=$(date +%s)
-"/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel" --reload
-
-# 等待 build 目录更新，每 5 秒检查一次，最多 30 秒
-DEPLOYED=false
-ELAPSED=0
-while [[ $ELAPSED -lt 30 ]]; do
-    sleep 5
-    ELAPSED=$((ELAPSED + 5))
-    printf "\r${BLUE}[INFO]${NC}  等待部署完成... %ds" "$ELAPSED"
-    LATEST=$(stat -f %m "$RIME_DIR/build/"*.bin 2>/dev/null | sort -rn | head -1)
-    if [[ -n "$LATEST" && "$LATEST" -ge "$BEFORE_TS" ]]; then
-        DEPLOYED=true
-        break
-    fi
-done
-echo ""
-
-echo ""
-if [[ "$DEPLOYED" == true ]]; then
-    printf "${GREEN}${BOLD}✓ 更新完成，Rime 已重新部署${NC}\n"
-else
-    printf "${YELLOW}${BOLD}⚠ 更新完成，但未确认 Rime 部署状态，请手动检查${NC}\n"
-fi
+# ─── 完成 ────────────────────────────────────────────
+printf "${GREEN}${BOLD}✓ 更新完成${NC}\n"
+warn "请手动部署：切换到鼠须管 → 右上角图标 → 重新部署"
 echo ""
