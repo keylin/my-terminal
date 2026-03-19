@@ -10,3 +10,6 @@ patch:
   # 一个方案时展开选项（不折叠）
   switcher/fold_options: false
 
+  # Shift 切中英，CapsLock 不拦截
+  ascii_composer/switch_key/Caps_Lock: noop
+
