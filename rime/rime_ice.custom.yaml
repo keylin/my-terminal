@@ -1,7 +1,10 @@
 # 雾凇拼音个人定制
 patch:
-  # 启用前后鼻音模糊音
+  # 启用模糊音（平翘舌 + 前后鼻音）
   "speller/algebra/+":
+    # 平翘舌
+    - derive/^([zcs])h/$1/
+    - derive/^([zcs])([^h])/$1h$2/
     - derive/ang$/an/
     - derive/an$/ang/
     - derive/eng$/en/
