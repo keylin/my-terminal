@@ -28,44 +28,38 @@ ok "配置已拉取"
 # ─── 2. 更新 rime-ice 词库 ───────────────────────────
 info "更新 rime-ice 词库..."
 
-# 保留运行时文件
-PRESERVE_PATTERNS=(
-    "build"
-    "*.userdb"
-    "*.userdb.txt"
-    "user.yaml"
-    "installation.yaml"
-    "*.custom.yaml"
-)
+# 增量更新 rime-ice（保留 .git 以支持增量拉取）
+if [[ -d "$RIME_DIR/.git" ]]; then
+    git -C "$RIME_DIR" fetch --depth 1
+    git -C "$RIME_DIR" reset --hard origin/main
+    ok "rime-ice 词库已增量更新"
+else
+    # 首次安装或 .git 被清理，备份运行时文件后重新 clone
+    PRESERVE_PATTERNS=("build" "*.userdb" "*.userdb.txt" "user.yaml" "installation.yaml" "*.custom.yaml")
+    TMPDIR_PRESERVE="$(mktemp -d)"
+    trap 'rm -rf "$TMPDIR_PRESERVE"' EXIT
 
-# 创建临时目录保存需要保留的文件
-TMPDIR_PRESERVE="$(mktemp -d)"
-trap 'rm -rf "$TMPDIR_PRESERVE"' EXIT
-
-for pattern in "${PRESERVE_PATTERNS[@]}"; do
-    # shellcheck disable=SC2086
-    for item in "$RIME_DIR"/$pattern; do
-        [[ -e "$item" ]] || continue
-        cp -a "$item" "$TMPDIR_PRESERVE/"
-        ok "保留: $(basename "$item")"
+    for pattern in "${PRESERVE_PATTERNS[@]}"; do
+        # shellcheck disable=SC2086
+        for item in "$RIME_DIR"/$pattern; do
+            [[ -e "$item" ]] || continue
+            cp -a "$item" "$TMPDIR_PRESERVE/"
+        done
     done
-done
 
-# 删除旧基座，重新 clone
-rm -rf "$RIME_DIR"
-git clone --depth 1 "$RIME_ICE_REPO" "$RIME_DIR"
-ok "rime-ice 词库已更新"
+    rm -rf "$RIME_DIR"
+    git clone --depth 1 "$RIME_ICE_REPO" "$RIME_DIR"
 
-# 清理仓库文件
-rm -rf "$RIME_DIR/.git" "$RIME_DIR/.github" "$RIME_DIR/.gitignore"
-rm -f "$RIME_DIR/README.md" "$RIME_DIR/LICENSE"
+    for item in "$TMPDIR_PRESERVE"/*; do
+        [[ -e "$item" ]] || continue
+        cp -a "$item" "$RIME_DIR/"
+    done
+    ok "rime-ice 词库已全量安装"
+fi
 
-# 恢复保留的文件
-for item in "$TMPDIR_PRESERVE"/*; do
-    [[ -e "$item" ]] || continue
-    cp -a "$item" "$RIME_DIR/"
-done
-ok "运行时文件已恢复"
+# 清理仓库无用文件（保留 .git）
+rm -rf "$RIME_DIR/.github"
+rm -f "$RIME_DIR/.gitignore" "$RIME_DIR/README.md" "$RIME_DIR/LICENSE"
 
 # ─── 3. 重新覆盖自定义配置 ──────────────────────────
 info "应用个人定制配置..."
@@ -83,8 +77,28 @@ fi
 
 # ─── 完成 ────────────────────────────────────────────
 echo ""
-printf "${GREEN}${BOLD}✓ 更新完成！${NC}\n"
+# ─── 4. 重新部署并验证 ───────────────────────────────
+info "重新部署 Rime..."
+BEFORE_TS=$(date +%s)
+"/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel" --reload
+
+# 等待 build 目录更新，最多 10 秒
+DEPLOYED=false
+for i in $(seq 1 10); do
+    sleep 1
+    printf "\r${BLUE}[INFO]${NC}  等待部署完成... %ds" "$i"
+    LATEST=$(stat -f %m "$RIME_DIR/build/"*.yaml 2>/dev/null | sort -rn | head -1)
+    if [[ -n "$LATEST" && "$LATEST" -ge "$BEFORE_TS" ]]; then
+        DEPLOYED=true
+        break
+    fi
+done
 echo ""
-info "请点击菜单栏鼠须管图标 → 重新部署"
-info "或按快捷键 Control+Option+\` 重新部署"
+
+echo ""
+if [[ "$DEPLOYED" == true ]]; then
+    printf "${GREEN}${BOLD}✓ 更新完成，Rime 已重新部署${NC}\n"
+else
+    printf "${YELLOW}${BOLD}⚠ 更新完成，但未确认 Rime 部署状态，请手动检查${NC}\n"
+fi
 echo ""
