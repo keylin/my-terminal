@@ -158,7 +158,7 @@ ensure_chezmoi() {
     fi
     info "安装 chezmoi..."
     if command -v brew &>/dev/null; then
-        brew install chezmoi
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install chezmoi
     else
         local chezmoi_bin="$HOME/.local/bin"
         mkdir -p "$chezmoi_bin"
