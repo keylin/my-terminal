@@ -89,7 +89,7 @@ while [[ $ELAPSED -lt 30 ]]; do
     sleep 5
     ELAPSED=$((ELAPSED + 5))
     printf "\r${BLUE}[INFO]${NC}  等待部署完成... %ds" "$ELAPSED"
-    LATEST=$(stat -f %m "$RIME_DIR/build/"*.yaml 2>/dev/null | sort -rn | head -1)
+    LATEST=$(stat -f %m "$RIME_DIR/build/"*.bin 2>/dev/null | sort -rn | head -1)
     if [[ -n "$LATEST" && "$LATEST" -ge "$BEFORE_TS" ]]; then
         DEPLOYED=true
         break
