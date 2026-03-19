@@ -82,11 +82,13 @@ info "重新部署 Rime..."
 BEFORE_TS=$(date +%s)
 "/Library/Input Methods/Squirrel.app/Contents/MacOS/Squirrel" --reload
 
-# 等待 build 目录更新，最多 10 秒
+# 等待 build 目录更新，每 5 秒检查一次，最多 30 秒
 DEPLOYED=false
-for i in $(seq 1 10); do
-    sleep 1
-    printf "\r${BLUE}[INFO]${NC}  等待部署完成... %ds" "$i"
+ELAPSED=0
+while [[ $ELAPSED -lt 30 ]]; do
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+    printf "\r${BLUE}[INFO]${NC}  等待部署完成... %ds" "$ELAPSED"
     LATEST=$(stat -f %m "$RIME_DIR/build/"*.yaml 2>/dev/null | sort -rn | head -1)
     if [[ -n "$LATEST" && "$LATEST" -ge "$BEFORE_TS" ]]; then
         DEPLOYED=true
