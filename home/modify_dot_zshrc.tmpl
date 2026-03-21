@@ -151,6 +151,7 @@ zle -N zle-line-init
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 # ─── Zoxide (must be at the end of .zshrc) ─────────────
+export _ZO_DOCTOR=0
 _cached_eval zoxide  zoxide init --cmd cd zsh
 MANAGED_EOF
 )
