@@ -9,7 +9,6 @@ $directory\
 $git_branch\
 $git_status\
 $python\
-$java\
 $nodejs\
 $rust\
 $golang\
@@ -40,9 +39,6 @@ format = "[$duration]($style) "
 [python]
 symbol = " "
 format = "[$symbol$version]($style) "
-
-[java]
-disabled = true
 
 [nodejs]
 symbol = " "

@@ -23,7 +23,12 @@ zinit light Aloxaf/fzf-tab
 zinit ice wait lucid
 zinit light zsh-users/zsh-syntax-highlighting
 
-# Load completions (同步加载，确保 compdef 对后续插件可用)
+# ─── Docker completions ─────────────────────────────────
+if [[ -d "$HOME/.docker/completions" ]]; then
+    fpath=($HOME/.docker/completions $fpath)
+fi
+
+# Load completions (同步加载，确保 compdef 对 turbo 插件可用)
 autoload -Uz compinit
 if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
     compinit
@@ -47,13 +52,22 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $realpath'
 
-# ─── Aliases (cross-platform) ───────────────────────────
+# ─── Aliases ─────────────────────────────────────────────
 alias ls='eza --color=always --icons=always'
 alias ll='eza -la --color=always --icons=always'
 alias lt='eza -T --color=always --icons=always --level=2'
-alias cat='bat --paging=never'
+# Debian/Ubuntu 上 bat/fd 的二进制名不同，优先使用标准名
+if command -v bat &>/dev/null; then
+    alias cat='bat --paging=never'
+elif command -v batcat &>/dev/null; then
+    alias cat='batcat --paging=never'
+fi
 alias grep='rg'
-alias find='fd'
+if command -v fd &>/dev/null; then
+    alias find='fd'
+elif command -v fdfind &>/dev/null; then
+    alias find='fdfind'
+fi
 
 # ─── Proxy ───────────────────────────────────────────────
 {{ if .proxy_port -}}
@@ -73,11 +87,6 @@ export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
 {{-   end }}
 {{- end }}
-
-# ─── Docker completions ─────────────────────────────────
-if [[ -d "$HOME/.docker/completions" ]]; then
-    fpath=($HOME/.docker/completions $fpath)
-fi
 {{- if eq .chezmoi.os "darwin" }}
 
 # ─── macOS only ──────────────────────────────────────────
@@ -101,8 +110,8 @@ bindkey '^[[F'  end-of-line          # End
 bindkey '^U' backward-kill-line       # Ctrl+U 删除光标前所有
 bindkey '^K' kill-line                # Ctrl+K 删除光标后所有
 bindkey '^W' backward-kill-word       # Ctrl+W 删除前一个单词
-bindkey '^[b' backward-word           # Alt+B 向前跳一个单词
-bindkey '^[f' forward-word            # Alt+F 向后跳一个单词
+bindkey '^[b' backward-word           # Alt+B 向左跳一个单词
+bindkey '^[f' forward-word            # Alt+F 向右跳一个单词
 
 # ─── Tool init (cached for fast startup) ─────────────────
 _cached_eval() {
