@@ -75,9 +75,7 @@ unfocused-split-opacity = 0.65
 unfocused-split-fill = #1e1e2e
 focus-follows-mouse = true
 
-{{- if eq .chezmoi.os "darwin" }}
 
-# ─── macOS only ──────────────────────────────────────────
+# ─── macOS only (.chezmoiignore 已确保此文件仅 macOS 生效) ──
 macos-titlebar-style = hidden
 macos-option-as-alt = true
-{{- end }}

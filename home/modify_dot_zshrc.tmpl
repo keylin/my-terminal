@@ -167,7 +167,7 @@ if [[ -z "$CURRENT" ]]; then
     echo "# ─── Your customizations below (not managed by chezmoi) ──"
 
 elif [[ "$CURRENT" == *"$START_MARKER"* ]] && [[ "$CURRENT" == *"$END_MARKER"* ]]; then
-    # ── Case 3: Subsequent apply (both markers present) ───
+    # ── Case 2: Subsequent apply (both markers present) ───
     # Replace content between markers; preserve everything else
     export MANAGED_BLOCK
     printf '%s\n' "$CURRENT" | awk -v start="$START_MARKER" -v end="$END_MARKER" '
@@ -189,7 +189,7 @@ elif [[ "$CURRENT" == *"$START_MARKER"* ]] && [[ "$CURRENT" == *"$END_MARKER"* ]
     }'
 
 else
-    # ── Case 2: First migration (content but no markers) ──
+    # ── Case 3: First migration (content but no markers) ──
     # Backup existing content to ~/.zshrc.local so it's sourced by managed block
     if [[ ! -f "$HOME/.zshrc.local" ]]; then
         printf '%s\n' "$CURRENT" > "$HOME/.zshrc.local"

@@ -44,64 +44,64 @@ ok "配置已拉取"
 
 # ─── 2. 升级终端相关软件包 ────────────────────────────
 if need_package_upgrade; then
-if [[ "$OS" == "Darwin" ]]; then
-    if command -v brew &>/dev/null; then
-        PACKAGES=(starship zsh fzf zoxide eza bat fd ripgrep delta jq tldr tmux chezmoi)
-        CASKS=(ghostty)
+    if [[ "$OS" == "Darwin" ]]; then
+        if command -v brew &>/dev/null; then
+            PACKAGES=(starship zsh fzf zoxide eza bat fd ripgrep delta jq tldr tmux chezmoi)
+            CASKS=(ghostty)
 
-        info "更新 Homebrew..."
-        brew update
+            info "更新 Homebrew..."
+            brew update
 
-        info "升级终端工具..."
-        for pkg in "${PACKAGES[@]}"; do
-            brew upgrade "$pkg" 2>/dev/null || true
-        done
-        ok "终端工具升级完成"
+            info "升级终端工具..."
+            for pkg in "${PACKAGES[@]}"; do
+                brew upgrade "$pkg" 2>/dev/null || true
+            done
+            ok "终端工具升级完成"
 
-        info "升级 cask 应用..."
-        for cask in "${CASKS[@]}"; do
-            brew upgrade --cask "$cask" 2>/dev/null || true
-        done
-        ok "cask 应用升级完成"
+            info "升级 cask 应用..."
+            for cask in "${CASKS[@]}"; do
+                brew upgrade --cask "$cask" 2>/dev/null || true
+            done
+            ok "cask 应用升级完成"
 
-        info "清理旧版本缓存..."
-        brew cleanup --prune=7 2>/dev/null || true
-        ok "Homebrew 清理完成"
-    else
-        warn "Homebrew 未安装，跳过软件包升级"
+            info "清理旧版本缓存..."
+            brew cleanup --prune=7 2>/dev/null || true
+            ok "Homebrew 清理完成"
+        else
+            warn "Homebrew 未安装，跳过软件包升级"
+        fi
+    elif [[ "$OS" == "Linux" ]]; then
+        PACKAGES=(zsh fzf bat fd-find ripgrep jq tldr tmux starship zoxide eza git-delta)
+
+        if command -v apt-get &>/dev/null; then
+            info "更新 apt 索引..."
+            sudo apt-get update -qq
+            info "升级终端工具..."
+            for pkg in "${PACKAGES[@]}"; do
+                sudo apt-get install --only-upgrade -y -qq "$pkg" 2>/dev/null || true
+            done
+            ok "终端工具升级完成"
+        elif command -v dnf &>/dev/null; then
+            info "升级终端工具..."
+            for pkg in "${PACKAGES[@]}"; do
+                sudo dnf upgrade -y -q "$pkg" 2>/dev/null || true
+            done
+            ok "终端工具升级完成"
+        elif command -v pacman &>/dev/null; then
+            info "升级终端工具..."
+            sudo pacman -S --noconfirm --needed "${PACKAGES[@]}" 2>/dev/null || true
+            ok "终端工具升级完成"
+        else
+            warn "未找到支持的包管理器，跳过软件包升级"
+        fi
     fi
-elif [[ "$OS" == "Linux" ]]; then
-    PACKAGES=(zsh fzf bat fd-find ripgrep jq tldr tmux starship zoxide eza git-delta)
-
-    if command -v apt-get &>/dev/null; then
-        info "更新 apt 索引..."
-        sudo apt-get update -qq
-        info "升级终端工具..."
-        for pkg in "${PACKAGES[@]}"; do
-            sudo apt-get install --only-upgrade -y -qq "$pkg" 2>/dev/null || true
-        done
-        ok "终端工具升级完成"
-    elif command -v dnf &>/dev/null; then
-        info "升级终端工具..."
-        for pkg in "${PACKAGES[@]}"; do
-            sudo dnf upgrade -y -q "$pkg" 2>/dev/null || true
-        done
-        ok "终端工具升级完成"
-    elif command -v pacman &>/dev/null; then
-        info "升级终端工具..."
-        sudo pacman -S --noconfirm --needed "${PACKAGES[@]}" 2>/dev/null || true
-        ok "终端工具升级完成"
-    else
-        warn "未找到支持的包管理器，跳过软件包升级"
-    fi
+    date +%s > "$UPDATE_RECORD"
 fi
-date +%s > "$UPDATE_RECORD"
-fi  # need_package_upgrade
 
-# ─── 3. 更新 chezmoi 外部依赖（zinit、tpm）─────────
-info "更新外部依赖（zinit、tpm）..."
+# ─── 3. 应用 chezmoi 配置并刷新外部依赖（zinit、tpm）──
+info "应用配置并刷新外部依赖..."
 chezmoi --source="$SCRIPT_DIR" apply --force --no-pager --refresh-externals -v
-ok "外部依赖已更新"
+ok "配置及外部依赖已更新"
 
 # ─── 4. 更新 tmux 插件 ──────────────────────────────
 TPM_DIR="$HOME/.tmux/plugins/tpm"

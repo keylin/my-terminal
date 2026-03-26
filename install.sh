@@ -218,47 +218,8 @@ EOF
     ok "配置信息已保存"
 }
 
-# ─── Backup existing dotfiles ─────────────────────────────
-backup_dotfiles() {
-    # Files managed by chezmoi (excluding .zshrc which uses modify_ strategy)
-    local files=(
-        "$HOME/.zshrc"
-        "$HOME/.zprofile"
-        "$HOME/.tmux.conf"
-        "$HOME/.config/starship.toml"
-        "$HOME/.config/ghostty/config"
-    )
-
-    local need_backup=false
-    for f in "${files[@]}"; do
-        if [[ -f "$f" ]]; then
-            need_backup=true
-            break
-        fi
-    done
-
-    if [[ "$need_backup" == false ]]; then
-        ok "无需备份（未发现已有配置文件）"
-        return
-    fi
-
-    local backup_dir="$HOME/.dotfiles_backup/$(date +%Y%m%d_%H%M%S)"
-    mkdir -p "$backup_dir"
-    info "备份已有配置文件到 $backup_dir ..."
-
-    for f in "${files[@]}"; do
-        if [[ -f "$f" ]]; then
-            local rel="${f#$HOME/}"
-            mkdir -p "$backup_dir/$(dirname "$rel")"
-            cp "$f" "$backup_dir/$rel"
-            ok "已备份: $rel"
-        fi
-    done
-
-    ok "备份完成: $backup_dir"
-}
-
 # ─── Init chezmoi & apply ───────────────────────────────
+# 备份由 chezmoi 的 run_once_before_00-backup-existing.sh 自动完成
 apply_dotfiles() {
     info "初始化 chezmoi 并应用配置..."
     if [[ "$INSTALL_MODE" == "local" ]]; then
@@ -293,12 +254,12 @@ main() {
 
     ensure_chezmoi
     collect_user_data
-    backup_dotfiles
     apply_dotfiles
 
     # chezmoi 的 run_once/run_onchange 脚本会自动完成:
-    # - 安装 Homebrew
-    # - 安装 CLI 工具和字体
+    # - 备份已有配置文件
+    # - 安装 Homebrew (仅 macOS)
+    # - 安装 CLI 工具
     # - 设置默认 shell 为 zsh
 
     echo ""
