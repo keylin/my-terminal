@@ -14,7 +14,7 @@ source "${ZINIT_HOME}/zinit.zsh"
 # ─── Zinit Plugins (turbo mode — prompt 立即出现) ────────
 zinit ice wait lucid blockf
 zinit light zsh-users/zsh-completions
-zinit ice wait lucid
+zinit ice wait lucid atload'bindkey "^[[Z" autosuggest-accept'
 zinit light zsh-users/zsh-autosuggestions
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=8"
@@ -98,7 +98,6 @@ claude() {
 bindkey '^[[3~' delete-char          # Delete
 bindkey '^[[H'  beginning-of-line    # Home
 bindkey '^[[F'  end-of-line          # End
-bindkey '^[[Z' autosuggest-accept    # Shift+Tab accept suggestion
 bindkey '^U' backward-kill-line       # Ctrl+U 删除光标前所有
 bindkey '^K' kill-line                # Ctrl+K 删除光标后所有
 bindkey '^W' backward-kill-word       # Ctrl+W 删除前一个单词
